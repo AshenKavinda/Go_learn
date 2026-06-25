@@ -1,25 +1,22 @@
-package main
+package app
 
 import (
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/ashenkavinda/go_social_app/internel/config"
 	"github.com/ashenkavinda/go_social_app/internel/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-type application struct {
-	config config
-	store  store.Storage
+type Application struct {
+	Config config.Config
+	Store  store.Storage
 }
 
-type config struct {
-	addr string
-}
-
-func (app *application) mount() http.Handler {
+func (app *Application) Mount() http.Handler {
 
 	r := chi.NewRouter()
 
@@ -35,23 +32,23 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/helth", app.helthCheckHandler)
+		r.Get("/helth", app.HelthCheckHandler)
 	})
 
 	return r
 }
 
-func (app *application) run(mux http.Handler) error {
+func (app *Application) Run(mux http.Handler) error {
 
 	ser := http.Server{
-		Addr:         app.config.addr,
+		Addr:         app.Config.Addr,
 		Handler:      mux,
 		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 10,
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("Application running on port %s", app.config.addr)
+	log.Printf("Application running on port %s", app.Config.Addr)
 
 	return ser.ListenAndServe()
 }

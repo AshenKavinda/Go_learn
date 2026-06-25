@@ -2,8 +2,11 @@ package main
 
 import (
 	"log"
-	"os"
 
+	"github.com/ashenkavinda/go_social_app/internel/app"
+	"github.com/ashenkavinda/go_social_app/internel/config"
+	"github.com/ashenkavinda/go_social_app/internel/db"
+	"github.com/ashenkavinda/go_social_app/internel/db/migration"
 	"github.com/ashenkavinda/go_social_app/internel/store"
 	"github.com/joho/godotenv"
 )
@@ -15,20 +18,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	port := os.Getenv("port")
+	cfg := config.Load()
 
-	store := store.NewPostgresStorage(nil)
+	gorm, sqlDB := db.InitializeConnection(cfg.DSN)
+	defer sqlDB.Close()
 
-	cfg := config{
-		addr: ":" + port,
+	migration.SqlMigration(gorm)
+
+	store := store.NewPostgresStorage(sqlDB)
+
+	app := app.Application{
+		Config: cfg,
+		Store:  store,
 	}
 
-	app := application{
-		config: cfg,
-		store:  store,
-	}
+	mux := app.Mount()
 
-	mux := app.mount()
-
-	log.Fatal(app.run(mux))
+	log.Fatal(app.Run(mux))
 }
