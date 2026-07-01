@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 
-	"github.com/ashenkavinda/go_social_app/internel/app"
 	"github.com/ashenkavinda/go_social_app/internel/config"
 	"github.com/ashenkavinda/go_social_app/internel/db"
 	"github.com/ashenkavinda/go_social_app/internel/db/migration"
@@ -27,7 +26,7 @@ func main() {
 
 	store := store.NewPostgresStorage(sqlDB)
 
-	app := app.Application{
+	app := Application{
 		Config: cfg,
 		Store:  store,
 	}

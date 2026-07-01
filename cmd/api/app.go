@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ashenkavinda/go_social_app/internel/config"
+	"github.com/ashenkavinda/go_social_app/internel/handlers"
 	"github.com/ashenkavinda/go_social_app/internel/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -31,8 +32,10 @@ func (app *Application) Mount() http.Handler {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	h := handlers.NewHandlers(app.Store)
+
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/helth", app.HelthCheckHandler)
+		r.Get("/health", h.HealthCheckHandler)
 	})
 
 	return r
