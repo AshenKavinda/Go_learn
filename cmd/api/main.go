@@ -6,7 +6,6 @@ import (
 	"github.com/ashenkavinda/go_social_app/internel/config"
 	"github.com/ashenkavinda/go_social_app/internel/db"
 	"github.com/ashenkavinda/go_social_app/internel/db/migration"
-	"github.com/ashenkavinda/go_social_app/internel/store"
 	"github.com/joho/godotenv"
 )
 
@@ -19,16 +18,15 @@ func main() {
 
 	cfg := config.Load()
 
-	gorm, sqlDB := db.InitializeConnection(cfg.DSN)
+	gorm, sqlDB := db.InitializeConnection(cfg.Server.DSN)
 	defer sqlDB.Close()
+
+	cfg.Server.DB = gorm
 
 	migration.SqlMigration(gorm)
 
-	store := store.NewPostgresStorage(sqlDB)
-
 	app := Application{
 		Config: cfg,
-		Store:  store,
 	}
 
 	mux := app.Mount()

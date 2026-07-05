@@ -3,19 +3,29 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ashenkavinda/go_social_app/internel/store"
+	"github.com/ashenkavinda/go_social_app/internel/config"
+	"github.com/ashenkavinda/go_social_app/internel/utils"
 )
 
-type Handlers struct {
-	Store store.Storage
+type HealthHandler struct {
+	config config.AppConfig
 }
 
-func NewHandlers(store store.Storage) *Handlers {
-	return &Handlers{
-		Store: store,
+func NewHealthHandler(config config.AppConfig) *HealthHandler {
+	return &HealthHandler{
+		config: config,
 	}
 }
 
-func (h *Handlers) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("ok"))
+func (h *HealthHandler) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+
+	data := map[string]string{
+		"status":  "ok",
+		"env":     h.config.ENV,
+		"version": h.config.Version,
+	}
+
+	if err := utils.WriteJSON(w, 200, data); err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+	}
 }

@@ -7,14 +7,14 @@ import (
 
 	"github.com/ashenkavinda/go_social_app/internel/config"
 	"github.com/ashenkavinda/go_social_app/internel/handlers"
-	"github.com/ashenkavinda/go_social_app/internel/store"
+	"github.com/ashenkavinda/go_social_app/internel/repository"
+	"github.com/ashenkavinda/go_social_app/internel/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Application struct {
 	Config config.Config
-	Store  store.Storage
 }
 
 func (app *Application) Mount() http.Handler {
@@ -32,10 +32,16 @@ func (app *Application) Mount() http.Handler {
 	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	h := handlers.NewHandlers(app.Store)
+	postRepository := repository.NewPostRepository(app.Config.Server.DB)
+
+	postService := service.NewPostService(postRepository)
+
+	healthHandler := handlers.NewHealthHandler(app.Config.App)
+	postHandler := handlers.NewPostHandler(&postService)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/health", h.HealthCheckHandler)
+		r.Get("/health", healthHandler.HealthCheckHandler)
+		r.Post("/post", postHandler.Create)
 	})
 
 	return r
@@ -44,14 +50,14 @@ func (app *Application) Mount() http.Handler {
 func (app *Application) Run(mux http.Handler) error {
 
 	ser := http.Server{
-		Addr:         app.Config.Addr,
+		Addr:         app.Config.Server.Addr,
 		Handler:      mux,
 		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 10,
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("Application running on port %s", app.Config.Addr)
+	log.Printf("Application running on port %s", app.Config.Server.Addr)
 
 	return ser.ListenAndServe()
 }

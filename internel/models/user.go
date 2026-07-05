@@ -1,11 +1,13 @@
 package models
 
-type User struct {
-	ID        int64  `json:"id"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Password  string `json:"-"`
-	CreatedAt string `json:"created_at"`
+import "time"
 
-	posts []Post
+type User struct {
+	ID        int64     `gorm:"primaryKey;autoIncrement" json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Password  string    `json:"-"`
+	CreatedAt time.Time `json:"created_at"`
+
+	Posts []Post
 }
