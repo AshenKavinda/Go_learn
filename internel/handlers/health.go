@@ -25,7 +25,5 @@ func (h *HealthHandler) HealthCheckHandler(w http.ResponseWriter, r *http.Reques
 		"version": h.config.Version,
 	}
 
-	if err := utils.WriteJSON(w, 200, data); err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-	}
+	utils.WriteJSON(w, 200, data)
 }
