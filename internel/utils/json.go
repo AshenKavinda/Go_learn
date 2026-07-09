@@ -31,8 +31,9 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, data any) error {
 func WriteError(w http.ResponseWriter, err error) {
 
 	type envelope struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
+		Code    string      `json:"code"`
+		Message string      `json:"message"`
+		Details interface{} `json:"details"`
 	}
 
 	var appErr *appError.AppError
@@ -49,6 +50,7 @@ func WriteError(w http.ResponseWriter, err error) {
 			&envelope{
 				Code:    appErr.Code,
 				Message: appErr.Message,
+				Details: appErr.Details,
 			},
 		)
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/ashenkavinda/go_social_app/internel/dto/request"
@@ -24,6 +25,12 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	if err := utils.ReadJSON(w, r, dto); err != nil {
 		utils.WriteError(w, appError.BadRequest("request validation error"))
+		return
+	}
+
+	if errs := utils.ValidateStruct(dto); errs != nil {
+		log.Println(errs)
+		utils.WriteError(w, appError.BadRequest("validation error", errs))
 		return
 	}
 

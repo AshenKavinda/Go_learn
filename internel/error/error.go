@@ -1,20 +1,23 @@
 package appError
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type AppError struct {
 	Code    string
 	Message string
 	Status  int
+	Details interface{}
 	Err     error
 }
 
 func (e *AppError) Error() string {
-    return e.Message
+	return e.Message
 }
 
 func (e *AppError) Unwrap() error {
-    return e.Err
+	return e.Err
 }
 
 func NotFound(msg string) *AppError {
@@ -25,11 +28,18 @@ func NotFound(msg string) *AppError {
 	}
 }
 
-func BadRequest(msg string) *AppError {
+func BadRequest(msg string, details ...interface{}) *AppError {
+
+	var d interface{}
+	if len(details) > 0 {
+		d = details[0]
+	}
+
 	return &AppError{
 		Code:    "BAD_REQUEST",
 		Message: msg,
 		Status:  http.StatusBadRequest,
+		Details: d,
 	}
 }
 
