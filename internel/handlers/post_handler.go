@@ -42,3 +42,12 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusCreated, responce)
 
 }
+
+func (h *PostHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	posts, err := h.PostService.GetAll(r.Context())
+	if err != nil {
+		utils.WriteError(w, err)
+	}
+
+	utils.WriteJSON(w, http.StatusOK, posts)
+}

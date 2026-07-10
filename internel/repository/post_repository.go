@@ -16,12 +16,22 @@ func NewPostRepository(db *gorm.DB) repositoryInterfaces.PostRepository {
 	return &PostRepository{DB: db}
 }
 
-func (r *PostRepository) Create(ctx context.Context, post *models.Post) error {
-	result := r.DB.WithContext(ctx).Create(&post) // pass pointer of data to Create
+func (r *PostRepository) Create(ctx context.Context, post *models.Post) (*int64, error) {
+	err := gorm.G[models.Post](r.DB).Create(ctx, post) // pass pointer of data to Create
 
-	if result.Error != nil {
-		return result.Error
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return &post.ID, nil
+}
+
+func (r *PostRepository) GetAll(ctx context.Context) (*[]models.Post, error) {
+
+	posts, err := gorm.G[models.Post](r.DB).Find(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &posts, nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/ashenkavinda/go_social_app/internel/dto/request"
 	"github.com/ashenkavinda/go_social_app/internel/dto/response"
+	appError "github.com/ashenkavinda/go_social_app/internel/error"
 	"github.com/ashenkavinda/go_social_app/internel/models"
 	repositoryInterfaces "github.com/ashenkavinda/go_social_app/internel/repository/interfaces"
 )
@@ -25,10 +26,19 @@ func (s *PostService) Create(ctx context.Context, req *request.PostRequest) (*re
 		UserID:  req.UserID,
 	}
 
-	if err := s.PostRepository.Create(ctx, post); err != nil {
+	if _, err := s.PostRepository.Create(ctx, post); err != nil {
 		return nil, err
 	}
 
 	return &response.MessageResponce{Message: "user created successfuly"}, nil
 
+}
+
+func (s *PostService) GetAll(ctx context.Context) (*[]models.Post, error) {
+	posts, err := s.PostRepository.GetAll(ctx)
+	if err != nil {
+		return nil, appError.Internel(err)
+	}
+
+	return posts, nil
 }
