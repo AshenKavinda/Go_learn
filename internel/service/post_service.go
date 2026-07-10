@@ -18,7 +18,7 @@ func NewPostService(repository repositoryInterfaces.PostRepository) PostService 
 	return PostService{PostRepository: repository}
 }
 
-func (s *PostService) Create(ctx context.Context, req *request.PostRequest) (*response.MessageResponce, error) {
+func (s *PostService) Create(ctx context.Context, req *request.CreatePost) (*response.MessageResponce, error) {
 	post := &models.Post{
 		Content: req.Content,
 		Title:   req.Title,
@@ -41,4 +41,46 @@ func (s *PostService) GetAll(ctx context.Context) (*[]models.Post, error) {
 	}
 
 	return posts, nil
+}
+
+func (s *PostService) GetByID(ctx context.Context, id int64) (*models.Post, error) {
+	post, err := s.PostRepository.GetByID(ctx, id)
+	if err != nil {
+		return nil, appError.NotFound("Record Not found.")
+	}
+	return post, nil
+}
+
+func (s *PostService) UpdateByID(ctx context.Context, id int64, data *request.UpdatePost) (*models.Post, error) {
+	post := &models.Post{
+		ID:      id,
+		Title:   data.Title,
+		Content: data.Content,
+		Tags:    data.Tags,
+	}
+
+	ra, err := s.PostRepository.Update(ctx, post)
+	if err != nil {
+		return nil, appError.Internel(err)
+	}
+
+	if ra <= 0 {
+		return nil, appError.NotFound("Record Not found.")
+	}
+
+	post, _ = s.GetByID(ctx, id)
+
+	return post, nil
+
+}
+
+func (s *PostService) Delete(ctx context.Context, id int64) error {
+	ra, err := s.PostRepository.Delete(ctx, id)
+	if err != nil {
+		return appError.Internel(err)
+	}
+	if ra <= 0 {
+		return appError.BadRequest("Invalied id")
+	}
+	return nil
 }
