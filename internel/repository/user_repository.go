@@ -44,21 +44,21 @@ func (s *UserRepository) GetByID(ctx context.Context, id int64) (*models.User, e
 	return &user, nil
 }
 
-func (s *UserRepository) Update(ctx context.Context, user *models.User) (*int, error) {
+func (s *UserRepository) Update(ctx context.Context, user *models.User) (int, error) {
 	ra, err := gorm.G[models.User](s.DB).Where("id = ?", user.ID).Updates(ctx, *user)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &ra, nil
+	return ra, nil
 }
 
-func (s *UserRepository) Delete(ctx context.Context, id int64) (*int, error) {
+func (s *UserRepository) Delete(ctx context.Context, id int64) (int, error) {
 	ra, err := gorm.G[models.User](s.DB).Where("id = ?", id).Delete(ctx)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	return &ra, nil
+	return ra, nil
 
 }

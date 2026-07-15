@@ -33,11 +33,14 @@ func (app *Application) Mount() http.Handler {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	postRepository := repository.NewPostRepository(app.Config.Server.DB)
+	userRepository := repository.NewUserRepository(app.Config.Server.DB)
 
 	postService := service.NewPostService(postRepository)
+	userService := service.NewUserService(userRepository)
 
 	healthHandler := handlers.NewHealthHandler(app.Config.App)
 	postHandler := handlers.NewPostHandler(&postService)
+	userHandler := handlers.NewUserHandler(&userService)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", healthHandler.HealthCheckHandler)
@@ -49,6 +52,15 @@ func (app *Application) Mount() http.Handler {
 			r.Get("/{id}", postHandler.GetByID)
 			r.Put("/{id}", postHandler.UpdateByID)
 			r.Delete("/{id}", postHandler.DeleteByID)
+		})
+
+		// user api
+		r.Route("/user", func(r chi.Router) {
+			r.Post("/", userHandler.Create)
+			r.Get("/", userHandler.GetAll)
+			r.Get("/{id}", userHandler.GetByID)
+			r.Put("/{id}", userHandler.UpdateByID)
+			r.Delete("/{id}", userHandler.DeleteByID)
 		})
 
 	})
