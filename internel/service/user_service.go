@@ -11,11 +11,12 @@ import (
 )
 
 type UserService struct {
-	UserRepository repositoryInterfaces.UserRepository
+	UserRepository     repositoryInterfaces.UserRepository
+	FollowerRepository repositoryInterfaces.Follower_repository
 }
 
-func NewUserService(repository repositoryInterfaces.UserRepository) UserService {
-	return UserService{UserRepository: repository}
+func NewUserService(userRepository repositoryInterfaces.UserRepository, followerRepository repositoryInterfaces.Follower_repository) UserService {
+	return UserService{UserRepository: userRepository, FollowerRepository: followerRepository}
 }
 
 func (s *UserService) Create(ctx context.Context, req *request.CreateUser) (*response.MessageResponce, error) {
@@ -79,4 +80,53 @@ func (s *UserService) Delete(ctx context.Context, id int64) error {
 		return appError.BadRequest("Invalid id")
 	}
 	return nil
+}
+
+func (s *UserService) Feed(ctx context.Context, userID int64) (*[]models.Post, error) {
+	posts, err := s.FollowerRepository.Feed(ctx, userID)
+	if err != nil {
+		return nil, appError.Internel(err)
+	}
+
+	return posts, nil
+}
+
+func (s *UserService) Follow(ctx context.Context, follower int64, following int64) (*response.MessageResponce, error) {
+	if follower == following {
+		return nil, appError.BadRequest("follower and following must be different")
+	}
+
+	if _, err := s.UserRepository.GetByID(ctx, follower); err != nil {
+		return nil, appError.NotFound("follower user not found")
+	}
+
+	if _, err := s.UserRepository.GetByID(ctx, following); err != nil {
+		return nil, appError.NotFound("following user not found")
+	}
+
+	if err := s.FollowerRepository.Follow(ctx, follower, following); err != nil {
+		return nil, appError.Internel(err)
+	}
+
+	return &response.MessageResponce{Message: "followed successfully"}, nil
+}
+
+func (s *UserService) Unfollow(ctx context.Context, follower int64, following int64) (*response.MessageResponce, error) {
+	if follower == following {
+		return nil, appError.BadRequest("follower and following must be different")
+	}
+
+	if _, err := s.UserRepository.GetByID(ctx, follower); err != nil {
+		return nil, appError.NotFound("follower user not found")
+	}
+
+	if _, err := s.UserRepository.GetByID(ctx, following); err != nil {
+		return nil, appError.NotFound("following user not found")
+	}
+
+	if err := s.FollowerRepository.Unfollow(ctx, follower, following); err != nil {
+		return nil, appError.Internel(err)
+	}
+
+	return &response.MessageResponce{Message: "unfollowed successfully"}, nil
 }

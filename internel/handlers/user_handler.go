@@ -72,6 +72,74 @@ func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, user)
 }
 
+func (h *UserHandler) Feed(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		utils.WriteError(w, appError.BadRequest("Invalid id"))
+		return
+	}
+
+	posts, err := h.UserService.Feed(r.Context(), id)
+	if err != nil {
+		utils.WriteError(w, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, posts)
+}
+
+func (h *UserHandler) Follow(w http.ResponseWriter, r *http.Request) {
+	followerStr := r.URL.Query().Get("follower")
+	followingStr := r.URL.Query().Get("following")
+
+	follower, err := strconv.ParseInt(followerStr, 10, 64)
+	if err != nil {
+		utils.WriteError(w, appError.BadRequest("Invalid follower id"))
+		return
+	}
+
+	following, err := strconv.ParseInt(followingStr, 10, 64)
+	if err != nil {
+		utils.WriteError(w, appError.BadRequest("Invalid following id"))
+		return
+	}
+
+	res, err := h.UserService.Follow(r.Context(), follower, following)
+	if err != nil {
+		utils.WriteError(w, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, res)
+}
+
+func (h *UserHandler) Unfollow(w http.ResponseWriter, r *http.Request) {
+	followerStr := r.URL.Query().Get("follower")
+	followingStr := r.URL.Query().Get("following")
+
+	follower, err := strconv.ParseInt(followerStr, 10, 64)
+	if err != nil {
+		utils.WriteError(w, appError.BadRequest("Invalid follower id"))
+		return
+	}
+
+	following, err := strconv.ParseInt(followingStr, 10, 64)
+	if err != nil {
+		utils.WriteError(w, appError.BadRequest("Invalid following id"))
+		return
+	}
+
+	res, err := h.UserService.Unfollow(r.Context(), follower, following)
+	if err != nil {
+		utils.WriteError(w, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, res)
+}
+
 func (h *UserHandler) UpdateByID(w http.ResponseWriter, r *http.Request) {
 	dto := &request.UpdateUser{}
 	err := utils.ReadJSON(w, r, dto)

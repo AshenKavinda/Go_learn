@@ -10,4 +10,10 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 
 	Posts []Post
+
+	// Users who follow me
+	Followers []User `gorm:"many2many:follows;joinForeignKey:FollowingID;joinReferences:FollowerID"`
+
+	// Users I follow
+	Following []User `gorm:"many2many:follows;joinForeignKey:FollowerID;joinReferences:FollowingID"`
 }

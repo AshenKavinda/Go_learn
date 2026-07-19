@@ -34,9 +34,10 @@ func (app *Application) Mount() http.Handler {
 
 	postRepository := repository.NewPostRepository(app.Config.Server.DB)
 	userRepository := repository.NewUserRepository(app.Config.Server.DB)
+	followerRepository := repository.NewFolloerRepository(app.Config.Server.DB)
 
 	postService := service.NewPostService(postRepository)
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, followerRepository)
 
 	healthHandler := handlers.NewHealthHandler(app.Config.App)
 	postHandler := handlers.NewPostHandler(&postService)
@@ -59,6 +60,9 @@ func (app *Application) Mount() http.Handler {
 			r.Post("/", userHandler.Create)
 			r.Get("/", userHandler.GetAll)
 			r.Get("/{id}", userHandler.GetByID)
+			r.Get("/{id}/feed", userHandler.Feed)
+			r.Post("/follow", userHandler.Follow)
+			r.Post("/unfollow", userHandler.Unfollow)
 			r.Put("/{id}", userHandler.UpdateByID)
 			r.Delete("/{id}", userHandler.DeleteByID)
 		})
